@@ -28,22 +28,32 @@ def run_scraper():
     try:
         logger.info("Starting scheduled job scraper run...")
         
-        # Run the scraper script
-        result = subprocess.run(
+        # Run the scraper script with real-time output
+        logger.info("Starting scraper subprocess...")
+        process = subprocess.Popen(
             [sys.executable, 'ez-apply.py'],
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             text=True,
-            timeout=300  # 5 minute timeout
+            bufsize=1,
+            universal_newlines=True
         )
         
-        if result.returncode == 0:
-            logger.info("Job scraper completed successfully")
-            if result.stdout:
-                logger.info(f"Scraper output: {result.stdout}")
-        else:
-            logger.error(f"Job scraper failed with return code {result.returncode}")
-            if result.stderr:
-                logger.error(f"Scraper error: {result.stderr}")
+        # Read output in real-time
+        try:
+            for line in process.stdout:
+                logger.info(f"SCRAPER: {line.strip()}")
+            
+            process.wait(timeout=300)  # 5 minute timeout
+            
+            if process.returncode == 0:
+                logger.info("Job scraper completed successfully")
+            else:
+                logger.error(f"Job scraper failed with return code {process.returncode}")
+                
+        except subprocess.TimeoutExpired:
+            process.kill()
+            logger.error("Job scraper timed out after 5 minutes")
                 
     except subprocess.TimeoutExpired:
         logger.error("Job scraper timed out after 5 minutes")

@@ -22,7 +22,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
-
+import sys
 # Import configuration
 try:
     from config import *
@@ -49,7 +49,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler(LOG_FILE),
-        logging.StreamHandler()
+        logging.StreamHandler(sys.stdout)  # Explicitly use stdout
     ]
 )
 logger = logging.getLogger(__name__)
@@ -377,11 +377,11 @@ class OpenAICareersScraper:
                 self.send_discord_notification(job)
         else:
             logger.info("No new jobs found")
-            # Send a Discord notification that no new jobs were found
+            # Send a Discord notification that no ew jobs were found
             if self.discord_webhook_url:
                 payload = {
                     "embeds": [{
-                        "title": "No New Electrical Engineering Jobs",
+                        "title": "No New Jobs",
                         "description": "No new relevant job postings were found in the latest scan.",
                         "color": 0x808080,
                         "timestamp": datetime.utcnow().isoformat(),
